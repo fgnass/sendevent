@@ -1,0 +1,25 @@
+{
+  "name": "sendevent",
+  "version": "0.0.1",
+  "description": "Middleware for server-sent-events with iframe fallback",
+  "keywords": [
+    "sse", "eventsource", "server-sent events", "comet", "long-polling"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/fgnass/sendevent.git"
+  },
+  "main": "index.js",
+  "browser": "client.js",
+  "scripts": {
+    "test": "mocha -g local"
+  },
+  "devDependencies": {
+    "mocha": "~1.14.0",
+    "express": "~3.4.4",
+    "browserify-middleware": "~1.19.0",
+    "supertest": "~0.8.1",
+    "sauce-connect-launcher": "~0.2.2",
+    "wd": "~0.2.5"
+  }
+}
