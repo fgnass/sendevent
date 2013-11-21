@@ -1,5 +1,7 @@
 # sendevent
 
+[![Build Status](https://travis-ci.org/fgnass/sendevent.png?branch=master)](https://travis-ci.org/fgnass/sendevent)
+
 Middleware to stream [server-sent events](http://en.wikipedia.org/wiki/Server-sent_events)
 to the client. Browsers that don't support the EventSource interface will fall
 back to a [hidden iframe](http://en.wikipedia.org/wiki/Comet_%28programming%29#Hidden_iframe).
