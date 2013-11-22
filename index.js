@@ -32,12 +32,8 @@ module.exports = function(mount) {
 
   function middleware(req, res, next) {
     if (req.url.indexOf(mount) !== 0) return next && next()
-
     var client = new Client(req, res)
     emitter.emit('connect', client)
-
-    // Close the connection if called from the test-suite
-    if ('close-stream' in req.headers) client.close()
   }
 
   middleware.on = emitter.on.bind(emitter)
