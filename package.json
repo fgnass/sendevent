@@ -1,9 +1,13 @@
 {
   "name": "sendevent",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Middleware for server-sent-events with iframe fallback",
   "keywords": [
-    "sse", "eventsource", "server-sent events", "comet", "long-polling"
+    "sse",
+    "eventsource",
+    "server-sent events",
+    "comet",
+    "long-polling"
   ],
   "repository": {
     "type": "git",
