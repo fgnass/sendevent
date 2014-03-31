@@ -13,13 +13,14 @@ module.exports = function(mount) {
   var id = 1
 
   function Client(req, res) {
-    this.send = req.headers.accept == 'text/event-stream'
-      ? sse(res)
-      : iframe(res, req.url.match(/close/))
-
     this.id = id++
     this.headers = req.headers
     this.res = res
+
+    this.send = req.headers.accept == 'text/event-stream'
+      ? sse(this)
+      : iframe(this, req.url.match(/close/))
+
     clients.push(this)
     res.on('close', this.close.bind(this))
   }
@@ -33,7 +34,8 @@ module.exports = function(mount) {
   function middleware(req, res, next) {
     if (req.url.indexOf(mount) !== 0) return next && next()
     var client = new Client(req, res)
-    emitter.emit('connect', client)
+    var re = req.url.match(/reconnect/)
+    emitter.emit(re? 'reconnect' : 'connect', client)
   }
 
   middleware.on = emitter.on.bind(emitter)
@@ -63,52 +65,52 @@ function remove(item, array) {
  * Initialize the event stream and add a sse() method to the response that
  * sends text/event-stream formatted data.
  */
-function sse(res) {
-  res.writeHead(200, {
+function sse(client) {
+  client.res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     'Connection': 'close'
   })
-  res.write(':hello\n')
+  client.res.write(':hello\n')
 
   return function(data) {
-    if (data) res.write('data: ' + JSON.stringify(data) + '\n')
-    res.write('\n\n') // Add extra line-breaks for Opera Mobile
+    if (data) client.res.write('data: ' + JSON.stringify(data) + '\n')
+    client.res.write('\n\n') // Add extra line-breaks for Opera Mobile
   }
 }
 
 /**
  * Initializes the iframe and returns a function that emits script tags.
  */
-function iframe(res, close) {
-  var close
-    , timeout
+function iframe(client, autoClose) {
 
-  res.writeHead(200, {
+  var timeout
+
+  client.res.writeHead(200, {
     'Content-Type': 'text/html',
     'Cache-Control': 'no-cache'
   })
 
   function script(code) {
-    res.write('<script>')
-    res.write(code)
-    res.write('</script>\n')
+    client.res.write('<script>')
+    client.res.write(code)
+    client.res.write('</script>\n')
   }
 
-  res.write('<html><body>')
+  function close() {
+    clearTimeout(timeout)
+    script('setTimeout(function() { location.search = "close&reconnect="+new Date() }, 0)')
+    client.close()
+  }
+
+  client.res.write('<html><body>')
 
   // Emit the p() function that passes the messages to the parent window
   script('function p(msg) { parent.handleSentEvent(msg) }')
 
-  if (close) {
+  if (autoClose) {
     // If requested with `?close` close the response after the first event
     // has been sent or the timeout of 60s is reached.
-    close = function() {
-      clearTimeout(timeout)
-      script('setTimeout(function() { location.reload() }, 0)')
-      res.end()
-      removeResponse()
-    }
     timeout = setTimeout(close, 60000)
   }
   else {
@@ -116,16 +118,16 @@ function iframe(res, close) {
     // connection and fires an onload event ...
     script(
       'window.onload = function() {' +
-      'location.href = location.pathname+"?v="+new Date()' +
+      'location.search = "v="+new Date()' +
       '}')
 
     // Add 4K padding so that the browser starts to parse the document
-    res.write(new Array(4096).join('.'))
+    client.res.write(new Array(4096).join('.'))
   }
 
   // Return a function that emits inline scripts which call p()
   return function(message) {
     script('p(' + JSON.stringify(message) + ')')
-    if (close) close()
+    if (autoClose) close()
   }
 }
