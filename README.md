@@ -14,6 +14,7 @@ timestamp every 10 seconds.
 ```js
 var express = require('express');
 var sendevent = require('sendevent');
+var app = express();
 
 // create a middlware that handles requests to `/eventstream`
 var events = sendevent('/eventstream');
@@ -22,7 +23,7 @@ app.use(events);
 
 // serve an empty page that just loads the browserify bundle
 app.get('/', function(req, res) {
-  res.write('<script src="/bundle.js"></script>');
+  res.end('<script src="/bundle.js"></script>');
 });
 
 // broadcast data to all connected clients every 10 seconds
