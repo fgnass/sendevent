@@ -43,12 +43,10 @@ module.exports = function(url, handle) {
   }
 
   var init = function() {
-    setTimeout(function() {
-      var source = new EventSource(url)
-      source.onmessage = function(ev) {
-        handle(JSON.parse(ev.data))
-      }
-    }, 2000)
+    var source = new EventSource(url)
+    source.onmessage = function(ev) {
+      handle(JSON.parse(ev.data))
+    }
   }
 
   if (!window.EventSource) init = createIframe
