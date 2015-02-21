@@ -1,6 +1,6 @@
 {
   "name": "sendevent",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Middleware for server-sent-events with iframe fallback",
   "keywords": [
     "sse",
