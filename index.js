@@ -62,22 +62,18 @@ function remove(item, array) {
 }
 
 /**
- * Initialize the event stream and add a sse() method to the response that
- * sends text/event-stream formatted data.
+ * Initialize the event stream and return a function that sends
+ * text/event-stream formatted data.
  */
 function sse(client) {
+  client.res.setTimeout(0)
   client.res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     'Connection': 'keep-alive'
   })
 
-  function keepAlive() {
-    client.res.write(':hello\n')
-    setTimeout(keepAlive, 60000)
-  }
-
-  keepAlive()
+  client.res.write(':hello\n')
 
   return function(data) {
     if (data) client.res.write('data: ' + JSON.stringify(data) + '\n')
