@@ -69,9 +69,15 @@ function sse(client) {
   client.res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
-    'Connection': 'close'
+    'Connection': 'keep-alive'
   })
-  client.res.write(':hello\n')
+
+  function keepAlive() {
+    client.res.write(':hello\n')
+    setTimeout(keepAlive, 60000)
+  }
+
+  keepAlive()
 
   return function(data) {
     if (data) client.res.write('data: ' + JSON.stringify(data) + '\n')
