@@ -19,11 +19,11 @@
     "test": "mocha -g local"
   },
   "devDependencies": {
-    "mocha": "~1.14.0",
-    "express": "~3.4.4",
-    "browserify-middleware": "~1.19.0",
-    "supertest": "~0.8.1",
-    "sauce-connect-launcher": "~0.2.2",
-    "wd": "~0.2.5"
+    "browserify-middleware": "^7.1.0",
+    "express": "^4.14.1",
+    "mocha": "^3.5.3",
+    "sauce-connect-launcher": "^1.2.2",
+    "supertest": "^0.8.3",
+    "wd": "^1.4.1"
   }
 }
