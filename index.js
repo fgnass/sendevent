@@ -29,6 +29,7 @@ module.exports = function(mount) {
     emitter.emit('disconnect', this)
     this.res.end()
     remove(this, clients)
+    this.closed = true
   }
 
   function middleware(req, res, next) {
@@ -93,16 +94,18 @@ function iframe(client, autoClose) {
     'Cache-Control': 'no-cache'
   })
 
-  function script(code) {
+  function script(code, cb) {
+    if (client.closed) return
     client.res.write('<script>')
     client.res.write(code)
-    client.res.write('</script>\n')
+    client.res.write('</script>\n', cb)
   }
 
   function close() {
     clearTimeout(timeout)
-    script('setTimeout(function() { location.search = "close&reconnect="+new Date() }, 0)')
-    client.close()
+    script('setTimeout(function() { location.search = "close&reconnect="+new Date() }, 0)', function () {
+      client.close()
+    })
   }
 
   client.res.write('<html><body>')
@@ -121,15 +124,16 @@ function iframe(client, autoClose) {
     script(
       'window.onload = function() {' +
       'location.search = "v="+new Date()' +
-      '}')
-
-    // Add 4K padding so that the browser starts to parse the document
-    client.res.write(new Array(4096).join('.'))
+      '}', function() {
+        // Add 4K padding so that the browser starts to parse the document
+        client.res.write(new Array(4096).join('.'))
+      })
   }
 
   // Return a function that emits inline scripts which call p()
   return function(message) {
-    script('p(' + JSON.stringify(message) + ')')
-    if (autoClose) close()
+    script('p(' + JSON.stringify(message) + ')', function() {
+      if (autoClose) close()
+    })
   }
 }
