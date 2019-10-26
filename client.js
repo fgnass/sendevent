@@ -54,7 +54,7 @@ module.exports = function(url, handle) {
     // reload and results in the connection being terminated after 30 seconds.
     window.addEventListener('beforeunload', function (event) {
       source.close()
-    }
+    })
   }
 
   if (!window.EventSource) init = createIframe
