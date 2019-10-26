@@ -47,6 +47,14 @@ module.exports = function(url, handle) {
     source.onmessage = function(ev) {
       handle(JSON.parse(ev.data))
     }
+
+    // Ensure that we close the source before the page is unloaded.
+    // Chrom(ium) works even if we don’t but Firefox throws a “The connection
+    // to <url> was interrupted while the page was loading.” error on
+    // reload and results in the connection being terminated after 30 seconds.
+    window.addEventListener('beforeunload', function (event) {
+      source.close()
+    }
   }
 
   if (!window.EventSource) init = createIframe
