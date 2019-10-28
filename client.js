@@ -51,10 +51,25 @@ module.exports = function(url, handle) {
       console.log('Connecting…')
       if (source !== null) { disconnect() }
       console.log('Creating new connection…')
+
       source = new EventSource(url)
       source.onmessage = function(ev) {
        handle(JSON.parse(ev.data))
-     }
+      }
+
+      // Define a catch-all check for connection status that retries
+      // if it notices that the connection is down. There are certain
+      // instances when EventSource does not automatically retry and
+      // this should ensure that they are all handled. On Firefox, for
+      // example, if the server is restarted, it will not attempt to
+      // reconnect but this will.
+      var checkForConnectionInterval = setInterval(function () {
+        if (source.readyState === 2 ) {
+          console.log('Detected that the connection is closed. Retrying…')
+          clearInterval(checkForConnectionInterval)
+          connect()
+        }
+      }, 3000)
     }
 
     function disconnect () {
@@ -64,20 +79,6 @@ module.exports = function(url, handle) {
     }
 
     connect()
-
-    // Define a catch-all check for connection status that retries
-    // if it notices that the connection is down. There are certain
-    // instances when EventSource does not automatically retry and
-    // this should ensure that they are all handled. On Firefox, for
-    // example, if the server is restarted, it will not attempt to
-    // reconnect but this will.
-    var checkForConnectionInterval = setInterval(function () {
-      if (source.readyState === 2 ) {
-        console.log('Detected that the connection is closed. Retrying…')
-        clearInterval(checkForConnectionInterval)
-        connect()
-      }
-    }, 3000)
 
     // Ensure that we close the source before the page is unloaded.
     // Chrom(ium) works even if we don’t but Firefox throws a “The connection
