@@ -45,11 +45,39 @@ module.exports = function(url, handle) {
   }
 
   var init = function() {
-    // TODO: Use ReconnectingEventSource.
-    var source = new EventSource(url)
-    source.onmessage = function(ev) {
-      handle(JSON.parse(ev.data))
+    var source = null
+
+    function connect () {
+      console.log('Connecting…')
+      if (source !== null) { disconnect() }
+      console.log('Creating new connection…')
+      source = new EventSource(url)
+      source.onmessage = function(ev) {
+       handle(JSON.parse(ev.data))
+     }
     }
+
+    function disconnect () {
+      console.log('Disconnecting…')
+      source.close()
+      source = null
+    }
+
+    connect()
+
+    // Define a catch-all check for connection status that retries
+    // if it notices that the connection is down. There are certain
+    // instances when EventSource does not automatically retry and
+    // this should ensure that they are all handled. On Firefox, for
+    // example, if the server is restarted, it will not attempt to
+    // reconnect but this will.
+    var checkForConnectionInterval = setInterval(function () {
+      if (source.readyState === 2 ) {
+        console.log('Detected that the connection is closed. Retrying…')
+        clearInterval(checkForConnectionInterval)
+        connect()
+      }
+    }, 3000)
 
     // Ensure that we close the source before the page is unloaded.
     // Chrom(ium) works even if we don’t but Firefox throws a “The connection
@@ -61,7 +89,7 @@ module.exports = function(url, handle) {
       // to <url> was interrupted while the page was loading.” error on reload.
       // When the host is localhost, this then results in the connection being
       // terminated after 30 seconds.
-      source.close()
+      disconnect()
 
       // Fix for 30-second timeout/disconnection issue on loads from memory cache
       // when Firefox is running on host localhost.
