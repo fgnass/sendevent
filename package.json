@@ -1,7 +1,12 @@
 {
   "name": "sendevent",
-  "version": "1.0.5",
+  "version": "1.0.6",
+  "author": "Felix Gnass <fgnass@gmail.com>",
+  "contributors": [
+    "Aral Balkan <mail@ar.al> (https://ar.al)"
+  ],
   "description": "Middleware for server-sent-events with iframe fallback",
+  "license": "MIT",
   "keywords": [
     "sse",
     "eventsource",
