@@ -48,9 +48,7 @@ module.exports = function(url, handle) {
     var source = null
 
     function connect () {
-      console.log('Connecting…')
       if (source !== null) { disconnect() }
-      console.log('Creating new connection…')
 
       source = new EventSource(url)
       source.onmessage = function(ev) {
@@ -64,8 +62,7 @@ module.exports = function(url, handle) {
       // example, if the server is restarted, it will not attempt to
       // reconnect but this will.
       var checkForConnectionInterval = setInterval(function () {
-        if (source.readyState === 2 ) {
-          console.log('Detected that the connection is closed. Retrying…')
+        if (source.readyState === 2 /* closed */) {
           clearInterval(checkForConnectionInterval)
           connect()
         }
@@ -73,7 +70,6 @@ module.exports = function(url, handle) {
     }
 
     function disconnect () {
-      console.log('Disconnecting…')
       source.close()
       source = null
     }
