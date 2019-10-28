@@ -1,4 +1,4 @@
-var cookies = require('lib/cookies')
+var cookies = require('./lib/cookies')
 
 module.exports = function(url, handle) {
 
